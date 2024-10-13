@@ -30,7 +30,7 @@ compute_nr_basis_functions = @(knot_vector,p) size(knot_vector, 2) - p - 1;
 % subroutine generating mesh for drawing basis functions
 mesh = @(a,c) [a:(c-a)/precision:c];
 % subroutine drawing basis functions
-plot_spline = @(knot_vector,p,nr,x) plot(x,compute_splines(knot_vector,p,nr,x));
+% plot_spline = @(knot_vector,p,nr,x) plot(x,compute_splines(knot_vector,p,nr,x));
 
 % computing order of polynomials
 p = compute_p(knot_vector);
@@ -50,6 +50,8 @@ x_begin = knot_vector(1);
 x_end = knot_vector(size(knot_vector,2));
 x=mesh(x_begin,x_end);
 
+
+% My implementation
 if (nr ~= size(coeff_vector, 2)) 
     disp("Poorly constructed coeff_vector")
 end
@@ -79,6 +81,7 @@ xlim([0, 100]);
 ylim([0, 100]);  
 saveas(gcf, 'spline_only.png');
 
+% End of my implementation
 
 
 
