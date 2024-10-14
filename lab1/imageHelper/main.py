@@ -1,5 +1,8 @@
 import tkinter as tk
+
 from PIL import Image, ImageTk
+
+order = 2
 
 
 def on_click(event):
@@ -44,12 +47,22 @@ def on_closing():
 
     # Repeat first and last X
     if x_values:
-        first_x = x_values[0]
-        last_x = x_values[-1]
-        spline_comb_xs = [first_x] + x_values + [last_x]
+        first_x = 0
+        last_x = 100
+        spline_comb_xs = [first_x] * (order + 1) + x_values + [last_x] * (order + 1)
     else:
         spline_comb_xs = []
 
+
+    # Adding fictional y_values to fix order
+    # Formula: len(y_values) = len(knot_vec) - 1 - order
+    first_y = y_values[0]
+    last_y = y_values[-1]
+    for i in range(order + 1):
+        if i % 2 == 0:
+            y_values.insert(0, first_y)
+        else:
+            y_values.append(last_y)
     # Display in the desired format
     print(f"splines_comp(1000, {spline_comb_xs}, {y_values})")
 
