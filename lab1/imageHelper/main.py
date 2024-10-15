@@ -1,3 +1,6 @@
+# p = 2 C1
+# TODO C0
+
 import tkinter as tk
 
 from PIL import Image, ImageTk
@@ -45,7 +48,7 @@ def on_closing():
     x_values = [point[0] for point in rounded_clicks]
     y_values = [point[1] for point in rounded_clicks]
 
-    # Repeat first and last X
+    # Repeat first and last X order + 1 times
     if x_values:
         first_x = 0
         last_x = 100
