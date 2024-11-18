@@ -67,25 +67,63 @@ for m = 1:K
   t = m * dt;
   fprintf(1, 'Iter %d, t = %f\n', m, t);
 
+  % % Assemble the right-hand side
+  % F(:) = 0;
+  % for e = elements(bx, by)
+  %   J = jacobian2d(e, bx, by);
+  %   for q = quad_data2d(e, k, bx, by)
+  %     basis = basis_evaluator2d(q.x, bx, by);
+  % 
+  %     % u - solution from the previous time step
+  %     [U, dU] = evaluate_with_grad2d(u, q.x, bx, by);
+  %     fval = theta * f(t, q.x) + (1 - theta) * f(t - dt, q.x);
+  % 
+  %     for i = dofs_on_element2d(e, bx, by)
+  %       [v, dv] = basis(i);
+  % 
+  %       rhs = U * v - dt * (1 - theta) * dot(dU, dv) + dt * fval;
+  %       F(idx(i)) = F(idx(i)) + rhs * q.w * J;
+  %     end
+  %   end
+  % end
+
   % Assemble the right-hand side
-  F(:) = 0;
-  for e = elements(bx, by)
+  %beta = @(x, t) [beta_x(x, t), beta_y(x, t)];
+  
+ 
+  
+%beta = @(x, t) [10, 89];
+beta = @(x, t) [10 * sin(2 * pi * t * 20) + 57 * cos(pi * x(1)), ...
+                89 * cos(2 * pi * t * 10) + 27 * sin(pi * x(2))];
+
+F(:) = 0;
+for e = elements(bx, by)
     J = jacobian2d(e, bx, by);
     for q = quad_data2d(e, k, bx, by)
-      basis = basis_evaluator2d(q.x, bx, by);
+        basis = basis_evaluator2d(q.x, bx, by);
 
-      % u - solution from the previous time step
-      [U, dU] = evaluate_with_grad2d(u, q.x, bx, by);
-      fval = theta * f(t, q.x) + (1 - theta) * f(t - dt, q.x);
+        % u - solution from the previous time step
+        [U, dU] = evaluate_with_grad2d(u, q.x, bx, by);
+        fval = theta * f(t, q.x) + (1 - theta) * f(t - dt, q.x);
 
-      for i = dofs_on_element2d(e, bx, by)
-        [v, dv] = basis(i);
+        % Evaluate wind contribution
+        beta_val = beta(q.x, t);  % Wartość wektora beta w punkcie q.x
+        disp(beta_val)
+        for i = dofs_on_element2d(e, bx, by)
+            [v, dv] = basis(i);
 
-        rhs = U * v - dt * (1 - theta) * dot(dU, dv) + dt * fval;
-        F(idx(i)) = F(idx(i)) + rhs * q.w * J;
-      end
+            % Standard RHS contribution
+            rhs = U * v - dt * (1 - theta) * dot(dU, dv) + dt * fval;
+
+            % Add wind contribution
+            wind_rhs = dt * dot(beta_val, dU) * v;
+
+            % Update global RHS
+            F(idx(i)) = F(idx(i)) + (rhs + wind_rhs) * q.w * J;
+        end
     end
-  end
+end
+
 
   % Impose boundary conditions
   for d = fixed_dofs
@@ -712,7 +750,7 @@ function save_plot(u, iter, bx, by)
   N = 50;
   h = figure('visible', 'off');
   surface_plot_spline(u, [0 1], [0 1], N, bx, by);
-  %zlim([0 0.8]);
+  zlim([0 1]);
   fprintf(1, 'Save as out_%d.png\n', iter);
   saveas(h, sprintf('out_%d.png', iter));
   close(h);
